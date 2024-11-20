@@ -10,11 +10,12 @@ const messageSchema = mongoose.Schema({
         ref: 'User',
         required: true
     },
-    room: {
+    receiver: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Room',
+        ref: 'User',
         required: true
-    }
+    },
+
 }, { timestamps: true })
 
 module.exports = mongoose.model('Message', messageSchema)

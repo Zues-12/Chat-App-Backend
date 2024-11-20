@@ -1,17 +1,39 @@
 const Message = require("../models/Message");
 
 const sendMessage = async (req, res) => {
-    // const { roomId } = req.params;
-    const { content, roomId } = req.body;
+    const { content, receiver } = req.body;
     const sender = req.user._id;
     try {
-        const message = new Message({ content, sender, room: roomId });
+        const message = new Message({ content, sender, receiver });
         await message.save();
-        res.status(201).json(message);
+        return res.status(201).json(message);
     } catch (error) {
-        res.status(500).json({ error: "Failed to send message" });
+        return res.status(500).json({ error: "Failed to send message" });
     }
 }
 
+const getMessages = async (req, res) => {
+    try {
+        const { receiver } = req.params;
+        console.log(req)
+        console.log(req.user._id)
 
-module.exports = { sendMessage }
+        // const messages = await Message.find({ sender: req.user._id, receiver: receiver }).populate("sender", "username");
+        const messages = await Message.find({
+            $or: [
+                { receiver: receiver, sender: req.user._id },
+                { sender: receiver, receiver: req.user._id }
+            ]
+        }).populate("sender", "username");
+
+        if (messages.length < 1) {
+            return res.status(404).json({ message: 'No messages found' });
+        }
+
+        return res.json(messages);
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+}
+
+module.exports = { sendMessage, getMessages }

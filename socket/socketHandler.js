@@ -17,7 +17,7 @@ const socketHandler = (io) => {
             io.emit("user:list", Object.values(onlineUsers));
         });
 
-        socket.on("message:send", ({ toUserId, content }) => {
+        socket.on("message:send", async ({ toUserId, content }) => {
 
             const sender = onlineUsers[socket.id];
             if (!sender) return;
@@ -27,10 +27,12 @@ const socketHandler = (io) => {
             );
 
             const message = {
-                senderId: sender.userId,
-                sender: sender.username,
+                sender: {
+                    _id: sender.userId,
+                    username: sender.username,
+                },
                 content,
-                timestamp: new Date().toISOString(),
+                createdAt: new Date().toISOString(),
             };
 
             if (recipientSocketId) {
