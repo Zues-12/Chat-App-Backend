@@ -1,0 +1,62 @@
+const socketIo = require("socket.io");
+
+// (can be replaced with Redis)
+const onlineUsers = {};
+
+const socketHandler = (server) => {
+    const io = socketIo(server, {
+        cors: {
+            origin: "http://localhost:3000",
+            methods: ["GET", "POST"],
+            credentials: true,
+        },
+    });
+
+    io.on("connection", (socket) => {
+        console.log("A user connected:", socket.id);
+
+        // Event: User Login
+        socket.on("user:login", ({ userId, username }) => {
+            onlineUsers[socket.id] = { userId, username };
+            console.log(`${username} (${userId}) connected`);
+
+            io.emit("user:list", Object.values(onlineUsers));
+        });
+
+        // Event: Send Message
+        socket.on("message:send", ({ toUserId, content }) => {
+            const sender = onlineUsers[socket.id];
+            if (!sender) return;
+
+            // Find the recipient's socket ID
+            const recipientSocketId = Object.keys(onlineUsers).find(
+                (key) => onlineUsers[key].userId === toUserId
+            );
+
+            const message = {
+                from: sender.userId,
+                fromName: sender.username,
+                content,
+                timestamp: new Date().toISOString(),
+            };
+
+            if (recipientSocketId) {
+                // Send the message to the recipient
+                io.to(recipientSocketId).emit("message:receive", message);
+            } else {
+                // Handle case where recipient is not online (e.g., store in DB)
+                console.log("Recipient not online. Consider storing this in DB.");
+            }
+        });
+
+        socket.on("disconnect", () => {
+            console.log(`User disconnected: ${socket.id}`);
+            delete onlineUsers[socket.id];
+
+            // Notify all users about the updated user list
+            io.emit("user:list", Object.values(onlineUsers));
+        });
+    });
+};
+
+module.exports = socketHandler;
