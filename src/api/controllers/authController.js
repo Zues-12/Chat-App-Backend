@@ -1,11 +1,7 @@
-const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const { generateToken } = require('../../utils/authUtils');
 
-const generateToken = (userId) => {
-    return jwt.sign({ id: userId }, process.env.JWT_Secret, { expiresIn: '10d' });
-}
-
-const signup = async (req, res) => {
+exports.signup = async (req, res) => {
     try {
         const { username, email, password } = req.body;
         const existingUser = await User.findOne({ email, username });
@@ -18,7 +14,7 @@ const signup = async (req, res) => {
     }
 }
 
-const login = async (req, res) => {
+exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
         const user = await User.findOne({ email });
@@ -43,7 +39,7 @@ const login = async (req, res) => {
 }
 
 
-const logout = async (req, res) => {
+exports.logout = async (req, res) => {
     try {
         res.clearCookie("token", {
             httpOnly: true,
@@ -57,5 +53,3 @@ const logout = async (req, res) => {
         return res.status(500).json({ message: err.message });
     }
 }
-
-module.exports = { signup, login, logout };

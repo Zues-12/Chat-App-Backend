@@ -6,42 +6,27 @@ const cookieParser = require("cookie-parser");
 require("dotenv").config();
 const app = express();
 
-const connectDB = require('./config/db');
-const routes = require('./routes/index');
-const socketHandler = require('./socket/socketHandler');
-PORT = process.env.PORT || 5000;
+const { connectDB } = require('./src/config/db');
+const routes = require('./src/api/routes/index');
+const { socketHandler } = require('./socket/socketHandler');
+const { corsOptions, Port } = require('./src/config/var');
 
 connectDB();
 
 const server = http.createServer(app);
 
 const io = new Server(server, {
-    cors: {
-        origin: 'http://localhost:3000',
-        credentials: true,
-        allowedHeaders: ['Content-Type', 'Authorization', 'Content-Disposition'],
-        methods: ['GET', 'POST', 'PUT', 'DELETE']
-    },
+    cors: corsOptions
 });
-
-
-const corsOptions = {
-    origin: 'http://localhost:3000',
-    credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization', 'Content-Disposition'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-};
 
 app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
-
-// Routes
 app.use('/api', routes);
 
 socketHandler(io);
 
-server.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+server.listen(Port, () => {
+    console.log(`Server is running on http://localhost:${Port}`);
 });
 

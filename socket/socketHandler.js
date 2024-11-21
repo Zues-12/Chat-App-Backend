@@ -1,36 +1,11 @@
-// /socket/socketHandler.js
-// const jwt = require('jsonwebtoken');
-// const cookie = require('cookie');
 
-const onlineUsers = {};
 
-const socketHandler = (io) => {
-
-    // io.use((socket, next) => {
-    //     const cookieHeader = socket.handshake.headers.cookie;
-    //     if (!cookieHeader) {
-    //         return next(new Error("Unauthorized: No cookie provided"));
-    //     }
-    //     const cookies = cookie.parse(cookieHeader);
-    //     const token = cookies.token;
-    //     try {
-    //         const user = jwt.verify(token, process.env.JWT_SECRET);
-    //         socket.user = user;
-    //         next();
-    //     } catch (err) {
-    //         return next(new Error("Unauthorized: Invalid token"));
-    //     }
-    // });
-
+exports.socketHandler = (io) => {
+    const onlineUsers = {};
     io.on("connection", (socket) => {
-        console.log("New client connected " + socket.id);
+        console.log("New client connected: " + socket.id);
 
         socket.on("user:login", ({ userId, username }) => {
-
-            // if (!socket.user || socket.user.userId !== userId) {
-            //     return socket.emit("error", { message: "Unauthorized login attempt" });
-            // }
-
             onlineUsers[socket.id] = { userId, username };
             io.emit("user:list", Object.values(onlineUsers));
         });
@@ -75,24 +50,7 @@ const socketHandler = (io) => {
             delete onlineUsers[socket.id];
             io.emit("user:list", Object.values(onlineUsers));
         });
-
-
-        socket.on('joinRoom', () => {
-            socket.join('Room')
-            console.log(`User ${socket.id} joined room`);
-        })
-
-        socket.on('leaveRoom', () => {
-            socket.leave("Room")
-            console.log(`User ${socket.id} left room `);
-        })
-
-        socket.on('sendMessage', message => {
-            console.log(message)
-            io.to(message.roomId).emit('messageReceived', message);
-        });
     });
 };
 
-module.exports = socketHandler;
 
