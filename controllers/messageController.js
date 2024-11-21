@@ -15,10 +15,6 @@ const sendMessage = async (req, res) => {
 const getMessages = async (req, res) => {
     try {
         const { receiver } = req.params;
-        console.log(req)
-        console.log(req.user._id)
-
-        // const messages = await Message.find({ sender: req.user._id, receiver: receiver }).populate("sender", "username");
         const messages = await Message.find({
             $or: [
                 { receiver: receiver, sender: req.user._id },
@@ -31,6 +27,7 @@ const getMessages = async (req, res) => {
         }
 
         return res.json(messages);
+
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }

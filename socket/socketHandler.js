@@ -1,14 +1,36 @@
 // /socket/socketHandler.js
-const Message = require("../models/Message");
-const Room = require("../models/Room");
+// const jwt = require('jsonwebtoken');
+// const cookie = require('cookie');
 
 const onlineUsers = {};
 
 const socketHandler = (io) => {
+
+    // io.use((socket, next) => {
+    //     const cookieHeader = socket.handshake.headers.cookie;
+    //     if (!cookieHeader) {
+    //         return next(new Error("Unauthorized: No cookie provided"));
+    //     }
+    //     const cookies = cookie.parse(cookieHeader);
+    //     const token = cookies.token;
+    //     try {
+    //         const user = jwt.verify(token, process.env.JWT_SECRET);
+    //         socket.user = user;
+    //         next();
+    //     } catch (err) {
+    //         return next(new Error("Unauthorized: Invalid token"));
+    //     }
+    // });
+
     io.on("connection", (socket) => {
         console.log("New client connected " + socket.id);
 
         socket.on("user:login", ({ userId, username }) => {
+
+            // if (!socket.user || socket.user.userId !== userId) {
+            //     return socket.emit("error", { message: "Unauthorized login attempt" });
+            // }
+
             onlineUsers[socket.id] = { userId, username };
             io.emit("user:list", Object.values(onlineUsers));
         });
@@ -42,6 +64,11 @@ const socketHandler = (io) => {
             }
         });
 
+        socket.on("user:logout", () => {
+            console.log(`User logged out: ${socket.id}`);
+            delete onlineUsers[socket.id];
+            io.emit("user:list", Object.values(onlineUsers));
+        });
 
         socket.on("disconnect", () => {
             console.log(`User disconnected: ${socket.id}`);
@@ -50,37 +77,20 @@ const socketHandler = (io) => {
         });
 
 
-
-
-
-
-
-
-
-        socket.on('joinRoom', (roomId) => {
-            socket.join(roomId)
-            console.log(`User ${socket.id} joined room ${roomId}`);
+        socket.on('joinRoom', () => {
+            socket.join('Room')
+            console.log(`User ${socket.id} joined room`);
         })
 
-        socket.on('leaveRoom', (roomId) => {
-            socket.leave(roomId)
-            console.log(`User ${socket.id} left room ${roomId}`);
+        socket.on('leaveRoom', () => {
+            socket.leave("Room")
+            console.log(`User ${socket.id} left room `);
         })
 
         socket.on('sendMessage', message => {
             console.log(message)
-            // try {
-            //     const message = new Message({ sender: senderId, room: roomId, content });
-            // await message.save();
             io.to(message.roomId).emit('messageReceived', message);
-            // } catch (err) {
-            //     console.error('Error saving message:', err);
-            // }
         });
-
-        // socket.on("disconnect", () => {
-        //     console.log("Client disconnected");
-        // });
     });
 };
 
