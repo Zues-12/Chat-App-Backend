@@ -1,7 +1,20 @@
 const User = require("../models/User");
 const { generateToken } = require('../../utils/authUtils');
 
+/**
+ * Signs up the user in and stores it in DB
+ *
+ * @param {Object} req - The request object containing username, email and password.
+ * @param {Object} res - The response object to send back a message or error.
+ *
+ * @async
+ * @function
+ *
+ * @returns {Promise<void>}
+ */
+
 exports.signup = async (req, res) => {
+
     try {
         const { username, email, password } = req.body;
         const existingUser = await User.findOne({ email, username });
@@ -14,7 +27,21 @@ exports.signup = async (req, res) => {
     }
 }
 
+
+/**
+ * Logs the user in and assigns a jwt Token to it
+ *
+ * @param {Object} req - The request object containing email and password.
+ * @param {Object} res - The response object to send back the user object with a token attached in cookies or an error.
+ *
+ * @async
+ * @function
+ *
+ * @returns {Promise<void>}
+ */
+
 exports.login = async (req, res) => {
+
     try {
         const { email, password } = req.body;
         const user = await User.findOne({ email });
@@ -32,12 +59,23 @@ exports.login = async (req, res) => {
                 sameSite: "strict",
             })
             .json({ user });
-
     } catch (error) {
-        res.status(500).json({ message: err.message });
+        res.status(500).json({ message: error.message });
     }
 }
 
+
+/**
+ * Logs out the user and removes cookies
+ *
+ * @param {Object} req - The request object containing the user
+ * @param {Object} res - The response object to remove the token attached in cookies or a message for an error.
+ *
+ * @async
+ * @function
+ *
+ * @returns {Promise<void>}
+ */
 
 exports.logout = async (req, res) => {
     try {

@@ -1,5 +1,5 @@
 exports.NodeEnv = process.env.NODE_ENV;
-exports.JWTSecret = process.env.JWT_SECRET;
+exports.JwtSecret = process.env.JWT_SECRET;
 exports.Port = process.env.PORT;
 exports.MongoUri = process.env.MONGO_URI;
 exports.corsOptions = {

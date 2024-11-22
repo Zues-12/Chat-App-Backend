@@ -1,6 +1,21 @@
+
+
 const Message = require("../models/Message");
 
+/**
+ * Creates a new message and saves it to the database.
+ *
+ * @param {Object} req - The request object containing the message content and receiver ID.
+ * @param {Object} res - The response object.
+ * 
+ * @async
+ * @function
+ * 
+ * @returns {Promise<void>}
+ */
+
 exports.sendMessage = async (req, res) => {
+
     const { content, receiver } = req.body;
     const sender = req.user._id;
     try {
@@ -12,7 +27,20 @@ exports.sendMessage = async (req, res) => {
     }
 }
 
+/**
+ * Retrieves messages between the current user and the specified receiver.
+ *
+ * @param {Object} req - The request object containing the receiver ID.
+ * @param {Object} res - The response object with all messages where the user and receiver are either the sender or the receiver.
+ * 
+ * @async
+ * @function
+ * 
+ * @returns {Promise<void>}
+ */
+
 exports.getMessages = async (req, res) => {
+
     try {
         const { receiver } = req.params;
         const messages = await Message.find({
