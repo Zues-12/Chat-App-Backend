@@ -1,3 +1,5 @@
+const Message = require('../src/api/models/Message');
+
 exports.socketHandler = (io) => {
     const onlineUsers = {};
     io.on("connection", (socket) => {
@@ -5,20 +7,21 @@ exports.socketHandler = (io) => {
 
 
         /** Login to the socket and add the user in onlineUsers array */
-        socket.on("user:login", ({ userId, username }) => {
+        socket.on("user:login", async ({ userId, username }) => {
+            console.log("Client logged in: " + socket.id);
             onlineUsers[socket.id] = { userId, username };
             io.emit("user:list", Object.values(onlineUsers));
+            console.log(Object.values(onlineUsers))
+
         });
 
         /** Get a list of all the online users */
-
         socket.on('getUserList', () => {
             io.emit("user:list", Object.values(onlineUsers));
         });
 
 
         /** Checks if the sender and reciver is in onlineUsers and sends a message to the receiver*/
-
         socket.on("message:send", async ({ toUserId, content }) => {
 
             const sender = onlineUsers[socket.id];
@@ -35,6 +38,7 @@ exports.socketHandler = (io) => {
                 },
                 content,
                 createdAt: new Date().toISOString(),
+                isRead: false
             };
 
             if (recipientSocketId) {
@@ -45,19 +49,20 @@ exports.socketHandler = (io) => {
         });
 
         /** Deletes the user from the online Users array on logout */
-
         socket.on("user:logout", () => {
             console.log(`User logged out: ${socket.id}`);
             delete onlineUsers[socket.id];
             io.emit("user:list", Object.values(onlineUsers));
+            console.log(Object.values(onlineUsers))
         });
 
         /** Deletes the user from the online Users array if the user is disconnected */
-
         socket.on("disconnect", () => {
             console.log(`User disconnected: ${socket.id}`);
             delete onlineUsers[socket.id];
             io.emit("user:list", Object.values(onlineUsers));
+            console.log(Object.values(onlineUsers))
+
         });
     });
 };

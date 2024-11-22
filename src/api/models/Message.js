@@ -15,6 +15,11 @@ const messageSchema = mongoose.Schema({
         ref: 'User',
         required: true
     },
+    isRead: {
+        type: Boolean,
+        required: true,
+        default: false
+    },
 
 }, { timestamps: true })
 

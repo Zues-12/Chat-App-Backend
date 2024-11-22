@@ -40,15 +40,19 @@ exports.sendMessage = async (req, res) => {
  */
 
 exports.getMessages = async (req, res) => {
-
     try {
         const { receiver } = req.params;
+
+
+        await Message.updateMany({ receiver: req.user?._id, sender: receiver, isRead: false }, { $set: { isRead: true } })
+
         const messages = await Message.find({
             $or: [
                 { receiver: receiver, sender: req.user._id },
                 { sender: receiver, receiver: req.user._id }
             ]
         }).populate("sender", "username");
+
 
         if (messages.length < 1) {
             return res.status(404).json({ message: 'No messages found' });
