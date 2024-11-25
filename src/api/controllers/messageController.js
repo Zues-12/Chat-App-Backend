@@ -65,6 +65,19 @@ exports.getMessages = async (req, res) => {
     }
 }
 
+
+/**
+ * Marks messages as read in the DB.
+ *
+ * @param {Object} req - The request object containing the receiver ID.
+ * @param {Object} res - The response object with any error responses
+ * 
+ * @async
+ * @function
+ * 
+ * @returns {Promise<void>}
+ */
+
 exports.readMessage = async (req, res) => {
     try {
         const { receiver } = req.body;
