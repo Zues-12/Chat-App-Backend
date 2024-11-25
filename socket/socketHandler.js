@@ -8,7 +8,6 @@ exports.socketHandler = (io) => {
 
         /** Login to the socket and add the user in onlineUsers array */
         socket.on("user:login", async ({ userId, username }) => {
-            console.log("Client logged in: " + socket.id);
             onlineUsers[socket.id] = { userId, username };
             io.emit("user:list", Object.values(onlineUsers));
             console.log(Object.values(onlineUsers))
@@ -50,15 +49,27 @@ exports.socketHandler = (io) => {
 
         /** Deletes the user from the online Users array on logout */
         socket.on("user:logout", () => {
-            console.log(`User logged out: ${socket.id}`);
             delete onlineUsers[socket.id];
             io.emit("user:list", Object.values(onlineUsers));
             console.log(Object.values(onlineUsers))
         });
 
+        /** Marks messages as read in real-time */
+        socket.on("message:markRead", ({ fromUserId }) => {
+            const senderSocketId = Object.keys(onlineUsers).find(
+                (key) => onlineUsers[key].userId === fromUserId
+            );
+
+            if (senderSocketId) {
+                io.to(senderSocketId).emit("message:readReceipt", {
+                    senderId: fromUserId,
+                    readerId: onlineUsers[socket.id].userId,
+                });
+            }
+        });
+
         /** Deletes the user from the online Users array if the user is disconnected */
         socket.on("disconnect", () => {
-            console.log(`User disconnected: ${socket.id}`);
             delete onlineUsers[socket.id];
             io.emit("user:list", Object.values(onlineUsers));
             console.log(Object.values(onlineUsers))

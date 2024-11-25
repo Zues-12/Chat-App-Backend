@@ -64,3 +64,13 @@ exports.getMessages = async (req, res) => {
         return res.status(500).json({ error: err.message });
     }
 }
+
+exports.readMessage = async (req, res) => {
+    try {
+        const { receiver } = req.body;
+        await Message.updateMany({ sender: req.user?._id, receiver: receiver, isRead: false }, { $set: { isRead: true } })
+        res.status(200)
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+}
